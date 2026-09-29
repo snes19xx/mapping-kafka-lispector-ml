@@ -1,0 +1,16 @@
+analysis/
+docs/
+raw_epubs/
+raw_txt/
+clean_txt/
+analysis/data/passages.json
+analysis/data/twins.json
+analysis/data/chunk_report.json
+analysis/data/blind2/sheet_*.md
+analysis/data/*.npy
+analysis/data/*.npz
+analysis/data/cache/
+OUT/
+analysis/data/logs/
+__pycache__/
+.v1/
