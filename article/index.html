@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Locating Shared Thought in Kafka and Lispector with Concept-Erased Embeddings</title>
+<meta name="description" content="An exploratory framework for comparing Kafka and Lispector across whole bodies of work, and how far to trust what it finds.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 30V14' stroke='%232F8A4C' stroke-width='1.8' stroke-linecap='round' fill='none'/%3E%3Cpath d='M16 26C9 26 5 22 4.5 16 11 16 15 20 16 26Z' fill='%23C8452F'/%3E%3Cpath d='M16 22C23 22 27 18 27.5 12 21 12 17 16 16 22Z' fill='%232E3380'/%3E%3Cg fill='%232F8A4C'%3E%3Ccircle cx='16' cy='3.6' r='3.1'/%3E%3Ccircle cx='19.9' cy='6.4' r='3.1'/%3E%3Ccircle cx='18.4' cy='11' r='3.1'/%3E%3Ccircle cx='13.6' cy='11' r='3.1'/%3E%3Ccircle cx='12.1' cy='6.4' r='3.1'/%3E%3C/g%3E%3Ccircle cx='16' cy='7.6' r='2' fill='%23EAF6EC'/%3E%3C/svg%3E">
+<style>
+  @font-face { font-family: "Computer Modern"; src: url("../fonts/cmunrm.woff2") format("woff2"); font-weight: normal; font-style: normal; }
+  @font-face { font-family: "Computer Modern"; src: url("../fonts/cmunbx.woff2") format("woff2"); font-weight: bold; font-style: normal; }
+  @font-face { font-family: "Computer Modern"; src: url("../fonts/cmunti.woff2") format("woff2"); font-weight: normal; font-style: italic; }
+  @font-face { font-family: "Computer Modern"; src: url("../fonts/cmunbi.woff2") format("woff2"); font-weight: bold; font-style: italic; }
+  @font-face { font-family: "Latin Modern Math"; src: url("../fonts/latinmodern-math.woff2") format("woff2"); }
+
+  :root { --ink: #000000; --paper: #faf9f6; --link: #0000aa; --rule: #d9d6cc; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 13.25pt; scroll-behavior: smooth; }
+  body { background: var(--paper); color: var(--ink); font-family: "Computer Modern", serif; line-height: 1.6; max-width: 1240px;
+    margin: 32px auto 80px; padding: 0 48px; text-align: justify; hyphens: auto; }
+  main > p, main > h2, main > h3, main > blockquote, main > ul, main > ol, .abstract-box, .sidebar, .table-wrap, .references, .table-caption { max-width: 960px; margin-left: auto; margin-right: auto; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; font-size: 11.25pt; border-bottom: 1px solid var(--ink); padding-bottom: 0.6rem; }
+  .topbar a { color: var(--ink); text-decoration: none; }
+  .topbar-left a:hover { text-decoration: underline; }
+  .nav-btn { display: inline-flex; align-items: center; gap: 0.5em; padding: 0.3em 0.8em; border: 1px solid var(--ink); font-size: 10.75pt; line-height: 1.2; transition: background 0.15s, color 0.15s; }
+  .nav-btn:hover { background: var(--ink); color: var(--paper) !important; text-decoration: none !important; }
+  .paper-header { text-align: center; margin-bottom: 3rem; }
+  .paper-title { font-size: 18.75pt; font-weight: bold; line-height: 1.3; margin: 0 auto 1.5rem; max-width: 900px; }
+  .paper-meta { font-size: 12.75pt; }
+  .abstract-box { margin: 2rem auto; font-size: 11.75pt; }
+  .abstract-label { text-align: center; font-weight: bold; margin-bottom: 0.5rem; }
+  .keywords { margin-top: 0.4rem; }
+  h2 { font-size: 14.75pt; font-weight: bold; margin-top: 2.6rem; margin-bottom: 1rem; }
+  h3 { font-size: 12.75pt; font-weight: bold; margin-top: 2rem; margin-bottom: 0.8rem; }
+  p { margin-bottom: 1rem; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  ul, ol { padding-left: 2rem; margin-bottom: 1rem; }
+  li { margin-bottom: 0.25rem; }
+  .sidebar { margin: 3rem auto; padding: 1.4rem 1.6rem; border: 1px solid var(--rule); }
+  .toc-title { text-align: center; font-weight: bold; margin-bottom: 0.8rem; text-transform: uppercase; font-size: 11.75pt; letter-spacing: 0.04em; }
+  .toc, .toc-sub { list-style: none; padding: 0; margin: 0; text-align: left; font-size: 11.75pt; }
+  .toc-sub { padding-left: 1.5rem; margin-top: 0.1rem; margin-bottom: 0.3rem; }
+  .toc a { color: var(--ink); }
+  .table-wrap { overflow-x: auto; margin: 0.6rem auto 2rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 11.25pt; margin: 0 auto; }
+  table thead tr { border-top: 2px solid var(--ink); border-bottom: 1px solid var(--ink); }
+  table tbody tr:last-child { border-bottom: 2px solid var(--ink); }
+  th, td { padding: 0.35rem 0.6rem; text-align: right; vertical-align: top; }
+  th:first-child, td:first-child { text-align: left; }
+  .table-caption { font-size: 11.75pt; margin-top: 1.6rem; margin-bottom: 0.4rem; text-align: left; }
+  figure { margin: 2.4rem auto; text-align: center; max-width: 1100px; }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption { font-size: 11.25pt; margin: 0.7rem auto 0; max-width: 960px; text-align: justify; }
+  blockquote { margin: 1rem auto; padding: 0 2.5rem; font-size: 11.75pt; }
+  blockquote.box { padding: 1rem 1.6rem; border: 1px solid var(--ink); font-size: 12pt; }
+  blockquote.box p { margin-bottom: 0.6rem; text-align: left; }
+  sub, sup { font-size: 0.75em; line-height: 0; }
+  mark.todo { background: #fff3a8; color: var(--ink); padding: 0 0.15em; }
+  .references { font-size: 11.25pt; }
+  .references p { padding-left: 2em; text-indent: -2em; margin-bottom: 0.6rem; text-align: left; hyphens: manual; overflow-wrap: anywhere; }
+  hr { border: 0; border-top: 1px solid var(--rule); margin: 2rem 0; }
+  @media (max-width: 640px) { body { padding: 0 16px; } .topbar { font-size: 10.25pt; } .nav-btn { font-size: 9.75pt; padding: 0.3em 0.6em; } }
+</style>
+</head>
+<body>
+<nav class="topbar">
+  <div class="topbar-left"><a href="../">&larr; back to viz</a></div>
+  <div class="topbar-right">
+    <a href="https://github.com/snes19xx/mapping-kafka-lispector-ml/blob/main/walkthrough.ipynb" target="_blank" rel="noopener" class="nav-btn nav-btn--outline">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      Jupyter Notebook
+    </a>
+  </div>
+</nav>
+
+<header class="paper-header">
+  <div class="paper-title">Locating Shared Thought in Kafka and Lispector with Concept-Erased Embeddings</div>
+  <div class="paper-meta">by Sandesh Bhandari | September 28, 2026</div>
+</header>
+
+<div class="abstract-box">
+  <div class="abstract-label">Abstract</div>
+  <p>Critics have long compared Franz Kafka and Clarice Lispector, but always through a few chosen passages. Sentence embeddings could compare every paragraph of both writers at once, yet they sort text mainly by who wrote it: in my corpus of 5,324 paragraphs in English translation, shown one unseen paragraph by each writer, a simple classifier tells which is Kafka&rsquo;s 97% of the time. I present an exploratory framework that removes this signal and then looks for paragraph pairs that are each other&rsquo;s closest match across the two writers. The framework combines a theme-instructed embedding, closed-form concept erasure of the author label, and hub-corrected mutual matching. I do not offer a reading of Kafka and Lispector. I ask what the framework does, and how far to trust what it surfaces. The central test uses a known answer: <em>The Metamorphosis</em> appears in two English translations, and the framework pairs a paragraph with its own other translation about nine times in ten, with or without erasure. Erasure removes the average difference between the two writers but leaves each book recognisable, costs a measurable share of plot-level detail, and changes which pairs are found. The pairs it surfaces barely change with tuning but depend strongly on the embedding model and its instruction. I release the code and sketch a blind human reading that others could use to test whether erasure improves the pairs.</p>
+  <p class="keywords"><strong>Keywords:</strong> concept erasure, sentence embeddings, translation, authorship, comparative literature, Kafka, Lispector</p>
+</div>
+
+<aside class="sidebar">
+  <div class="toc-title">Contents</div>
+  <ul class="toc"><li><a href="#1-introduction">1. Introduction</a></li><li><a href="#2-background">2. Background</a><ul class="toc-sub"><li><a href="#21-style-and-content-in-computational-literary-study">2.1 Style and content in computational literary study</a></li><li><a href="#22-the-translators-signal">2.2 The translator&rsquo;s signal</a></li><li><a href="#23-removing-a-concept-from-a-representation">2.3 Removing a concept from a representation</a></li></ul></li><li><a href="#3-corpus">3. Corpus</a></li><li><a href="#4-method">4. Method</a><ul class="toc-sub"><li><a href="#41-the-lens-four-embeddings">4.1 The lens: four embeddings</a></li><li><a href="#42-erasing-the-author">4.2 Erasing the author</a></li><li><a href="#43-bridges">4.3 Bridges</a></li><li><a href="#44-the-map-and-its-constellations">4.4 The map and its constellations</a></li><li><a href="#45-what-each-test-can-show">4.5 What each test can show</a></li></ul></li><li><a href="#5-results">5. Results</a><ul class="toc-sub"><li><a href="#51-the-raw-space-sorts-by-writer-whatever-the-lens">5.1 The raw space sorts by writer, whatever the lens</a></li><li><a href="#52-what-erasure-removes-and-what-it-costs">5.2 What erasure removes, and what it costs</a></li><li><a href="#53-a-known-answer-two-translations-of-the-metamorphosis">5.3 A known answer: two translations of The Metamorphosis</a></li><li><a href="#54-bridges-nulls-and-stability">5.4 Bridges: nulls and stability</a></li><li><a href="#55-illustrations">5.5 Illustrations</a></li><li><a href="#56-reading-the-bridges-blind">5.6 Reading the bridges blind</a></li></ul></li><li><a href="#6-discussion">6. Discussion</a></li><li><a href="#7-conclusion">7. Conclusion</a></li><li><a href="#data-and-code-availability">Data and code availability</a></li><li><a href="#references">References</a></li><li><a href="#appendix-a-full-measurements">Appendix A. Full measurements</a></li><li><a href="#appendix-b-pilot-machine-reading-previous-corpus">Appendix B. Pilot machine reading (previous corpus)</a></li><li><a href="#appendix-c-settings">Appendix C. Settings</a></li></ul>
+</aside>
+
+<main>
+<h2 id="1-introduction">1. Introduction</h2>
+<p>Kafka and Lispector are often read together. Hélène Cixous gave both writers chapters in the same book of seminars (Cixous 1991), and the cockroach of <em>The Passion According to G.H.</em> is regularly read after Gregor Samsa&rsquo;s transformation (Arnds 2023). Dixon (1981) goes furthest, arguing that <em>G.H.</em> retells <em>The Metamorphosis</em> and shares its essential structure. These comparisons work by close reading of a few chosen passages. They cannot say how much of either body of work lies close to the other, or where.</p>
+<p>Text embeddings seem to offer a way to ask that question across whole books. An embedding model turns each paragraph into a list of numbers so that paragraphs with similar meaning receive similar lists. Comparing every Kafka paragraph with every Lispector paragraph is then a matter of arithmetic. The obstacle is that embeddings record more than meaning. They also record vocabulary, sentence rhythm, genre, period and, for writers read in English, the habits of each translator. For two writers from different languages, rendered by a dozen translators, those signals are strong. In my corpus, shown one unseen paragraph by each writer, a simple classifier trained on the embeddings tells which is Kafka&rsquo;s 97% of the time (a held-out ROC AUC of 0.97), and only about one in eight of a paragraph&rsquo;s nearest neighbours is by the other writer, where random authorship would give one in two. A map drawn from these embeddings is a map of two voices.</p>
+<p>This paper describes a framework for looking past that division, and tests it. The framework has three steps. It reads each paragraph with an embedding model instructed to attend to theme. It then removes the author signal with two closed-form operations: LEACE, which makes the two writers&rsquo; average positions coincide (Belrose et al. 2023), and CORAL, which makes their spreads match (Sun, Feng and Saenko 2016). Finally, it pairs paragraphs across the two writers. A few paragraphs resemble almost everything and would win too many matches, so each paragraph&rsquo;s score is lowered in proportion to how popular it is (Conneau et al. 2018). Only pairs in which each paragraph is the other&rsquo;s best match are kept. I call these pairs <em>bridges</em>.</p>
+<p>Five terms carry a fixed meaning in what follows. A <em>voice</em> is the recognisable manner of a writer, a translator or a genre, as it survives in English text and shows up in an embedding: anything a classifier can use to tell the sources apart. A <em>lens</em> is one way of embedding the passages, fixed by the model and the instruction it is given (Section 4.1). A <em>bridge</em> is a Kafka passage and a Lispector passage that are each other&rsquo;s best match. A <em>cluster</em> is any group of passages that a clustering algorithm puts together. A <em>constellation</em> is a cluster of the erased map that I have named by reading its most central passages (Section 4.4).</p>
+<p>This framework is an exploratory tool, not literary proof. It simply surfaces ranked candidate passages for critical examination. Whether an identified bridge reveals meaningful kinship between Kafka and Lispector is ultimately for their readers to decide. A methods paper can only determine what the system preserves, excludes, or invents, and how stable its results remain. Those are the questions I answer here:</p>
+<p>My main findings are these.</p>
+<ol>
+<li><strong>The framework finds the same content across two voices when the answer is known.</strong> Two translations of <em>The Metamorphosis</em>, by Susan Bernofsky and by Willa and Edwin Muir, give a ground truth that uses no embeddings. Treating the translators as the two &ldquo;authors&rdquo;, the framework pairs a paragraph with its own other translation 90% of the time (chance: under 1%), and erasure does not reduce this.</li>
+<li><strong>Erasure removes the contrast it is given, and only that.</strong> Once the author signal is scrubbed, simple classifiers can no longer guess who wrote a given paragraph any better than a coin flip, and passages by both writers mingle freely. While subtler, more intricate stylistic traces linger, broader context like the translator’s voice, genre, and time period survives intact.</li>
+<li><strong>Erasure has a cost,</strong> concentrated in the second step: the paragraph that actually comes next in a text becomes harder to find, mostly because paragraphs from other books now compete with it.</li>
+<li><strong>Counting bridges proves nothing.</strong> Shuffling the author labels produces as many bridges as the real labels.</li>
+<li><strong>Bridges are stable under tuning but not under a change of lens.</strong> Changing the erasure&rsquo;s dimensionality or the matching&rsquo;s neighbourhood leaves 85 to 94% of the top 300 bridges in place; changing the embedding model leaves 5 to 13%, and changing only the instruction leaves 29%.</li>
+</ol>
+<p>Findings 3 to 5 are limits of the framework. Whether erasure improves the bridges for a human reader remains untested; Section 5.6 sketches a blind reading that could answer it.</p>
+<h2 id="2-background">2. Background</h2>
+<h3 id="21-style-and-content-in-computational-literary-study">2.1 Style and content in computational literary study</h3>
+<p>Authorship attribution has long exploited the fact that writers are recognisable from features that carry little meaning, above all the frequencies of common words (Burrows 2002; Stamatatos 2009). The same fact is a nuisance when the goal is to compare what writers say. Work on style representations has shown that models trained to recognise authors also learn topic, because authors tend to write about certain things, and has tried to control for it (Wegmann, Schraagen and Nguyen 2022). My problem is the reverse: I want content, and the author gets in the way.</p>
+<p>Computational literary studies has debated what such models can see. Long and So (2016) use machine classification alongside close reading to study the English haiku. Underwood (2019) argues for measurement at the scale of literary history. Da (2019) contends that many such results are either obvious or artefacts of method. Dexter et al. (2017) use stylometric and machine-learning techniques to study inexact literary relationships, such as influence without quotation, which is close to the question here. I take from this debate the need to state what each measurement can and cannot show, and to report the ones that go against me.</p>
+<h3 id="22-the-translators-signal">2.2 The translator&rsquo;s signal</h3>
+<p>Every text in this study is a translation, so the question of whose voice an embedding records is sharp. Stylometric work on translation has found that frequency-based methods usually identify the original author, not the translator (Rybicki 2012), though translators can be told apart when one text is divided between them (Rybicki and Heydel 2013). Those studies use word frequencies; embeddings are a different kind of representation, and I test the question directly with the two translations of <em>The Metamorphosis</em> (Section 5.3).</p>
+<h3 id="23-removing-a-concept-from-a-representation">2.3 Removing a concept from a representation</h3>
+<p>Machine-learning research on fairness has developed ways to remove a protected attribute, such as gender, from learned representations. Adversarial training leaves the attribute recoverable (Elazar and Goldberg 2018). Iterative projection removes the directions a linear classifier uses (Ravfogel et al. 2020). LEACE gives the least-squares edit after which no linear classifier can recover the attribute, in closed form (Belrose et al. 2023). None of these guarantees removal against nonlinear classifiers, which is why I add a second step borrowed from domain adaptation: CORAL aligns the covariance of two populations (Sun, Feng and Saenko 2016). For matching across two populations I use cross-domain similarity local scaling (CSLS), introduced for aligning word vectors across languages (Conneau et al. 2018). It corrects for <em>hubness</em>, the tendency of a few points in high-dimensional spaces to be the nearest neighbour of many others (Radovanović, Nanopoulos and Ivanović 2010).</p>
+<p>The closest work is Fan et al. (2025), who use LEACE to remove confounders such as a text&rsquo;s source or language from document embeddings, and show that clustering and retrieval across pooled corpora improve without degrading the embeddings. Their corpora are political and legal texts. To my knowledge, these techniques have not been applied to compare literary authors, and a search of the literature found no such study.</p>
+<h2 id="3-corpus">3. Corpus</h2>
+<p>The corpus is ten books in English translation, five by each writer (Table 1). The plain texts of the books are cut to the work&rsquo;s own first and last lines. Text was split at paragraph boundaries. Paragraphs shorter than 70 words were joined to the next paragraph within the same story, chapter, letter or crônica; paragraphs longer than 280 words were split at sentence ends into near-equal parts; fragments under 35 words that could not be joined were dropped (83 fragments, 1,046 words in all). The result is 5,324 passages: 2,309 by Kafka and 3,015 by Lispector, with a median length of 119 words.</p>
+<p class="table-caption"><strong>Table 1.</strong> Books, translators and passages.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Writer</th>
+<th>Book</th>
+<th>Translator(s)</th>
+<th>Passages</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Kafka</td>
+<td><em>The Metamorphosis</em></td>
+<td>Susan Bernofsky</td>
+<td>123</td>
+</tr>
+<tr>
+<td>Kafka</td>
+<td><em>Aphorisms</em></td>
+<td>Willa and Edwin Muir; Michael Hofmann</td>
+<td>65</td>
+</tr>
+<tr>
+<td>Kafka</td>
+<td><em>Letters to Milena</em></td>
+<td>Philip Boehm</td>
+<td>585</td>
+</tr>
+<tr>
+<td>Kafka</td>
+<td><em>The Complete Stories</em> (without <em>The Metamorphosis</em>)</td>
+<td>Willa and Edwin Muir; Tania and James Stern; others</td>
+<td>973</td>
+</tr>
+<tr>
+<td>Kafka</td>
+<td><em>Amerika: The Missing Person</em></td>
+<td>Mark Harman</td>
+<td>563</td>
+</tr>
+<tr>
+<td>Lispector</td>
+<td><em>The Passion According to G.H.</em></td>
+<td>Idra Novey</td>
+<td>417</td>
+</tr>
+<tr>
+<td>Lispector</td>
+<td><em>Too Much of Life: Complete Crônicas</em></td>
+<td>Margaret Jull Costa; Robin Patterson</td>
+<td>737</td>
+</tr>
+<tr>
+<td>Lispector</td>
+<td><em>Água Viva</em></td>
+<td>Stefan Tobler</td>
+<td>206</td>
+</tr>
+<tr>
+<td>Lispector</td>
+<td><em>The Hour of the Star</em></td>
+<td>Benjamin Moser</td>
+<td>204</td>
+</tr>
+<tr>
+<td>Lispector</td>
+<td><em>The Complete Stories</em></td>
+<td>Katrina Dodson</td>
+<td>1,451</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Two decisions about duplicates.</strong> <em>The Complete Stories</em> of Kafka contains the Muirs&rsquo; translation of <em>The Metamorphosis</em>, so the novella would otherwise appear twice. I removed the Muirs&rsquo; version (122 passages) from the corpus and kept it aside as the second translation for the known-answer test (Section 5.3). Lispector reused some of her own text across books: 13 pairs of passages, mostly between <em>Água Viva</em> and the crônicas, are near-duplicates (cosine above 0.85 in the general sentence embedding). I kept them. They can only form same-author pairs and so cannot become bridges, but they do affect neighbourhoods.</p>
+<p><strong>Length.</strong> Kafka&rsquo;s passages are longer (median 151 words against Lispector&rsquo;s 104), and length alone predicts the author better than chance (AUC 0.67). Embeddings are sensitive to length, so part of the author signal is a length signal.</p>
+<p><strong>Rights.</strong> The primary texts remain in copyright. The repository distributes no source texts or precomputed embeddings. It provides only the replication scripts and instructions for readers to embed, align, and bridge their own lawfully acquired copies. The code is available under an MIT license at <a href="https://github.com/snes19xx/mapping-kafka-lispector-ml">github.com/snes19xx/mapping-kafka-lispector-ml</a>.</p>
+<h2 id="4-method">4. Method</h2>
+<p>I describe each step in words first; the formulas and settings are collected in Box 1.</p>
+<h3 id="41-the-lens-four-embeddings">4.1 The lens: four embeddings</h3>
+<p>I embed every passage four ways, to separate the effect of the model from the effect of its instruction.</p>
+<ul>
+<li><strong>General sentence model:</strong> all-mpnet-base-v2, a widely used sentence-transformer (Reimers and Gurevych 2019; Song et al. 2020).</li>
+<li><strong>Qwen3-Embedding-0.6B without instruction</strong> (Zhang et al. 2025).</li>
+<li><strong>Qwen3 with a neutral instruction:</strong> &ldquo;Identify the theme of this literary passage&rdquo;.</li>
+<li><strong>Qwen3 with the theme instruction</strong> used for the map: &ldquo;Identify the existential and philosophical theme of this literary passage, setting aside its plot, characters, setting and prose style.&rdquo;</li>
+</ul>
+<p>Telling the embedding model to attend to shared themes builds in a deliberate bias. Every text, whatever its genre or register, is pushed toward a conceptual frame that earlier comparative scholarship has already chosen. Plainer passages, such as Karl Rossmann&rsquo;s administrative misadventures in a hotel in <em>Amerika</em> or Lispector&rsquo;s newspaper columns about domestic workers, risk being read through an existential frame they may not share. A neutral instruction serves as the control: it lets me measure how much of the bridge structure reflects content and how much is an effect of the prompt (Section 5.1).</p>
+<h3 id="42-erasing-the-author">4.2 Erasing the author</h3>
+<p>LEACE moves each passage the smallest distance needed to make the two writers&rsquo; average positions coincide. After that, no classifier that separates the two writers with a straight boundary can tell them apart on the passages it was fitted to. A classifier that looks at the shape of each writer&rsquo;s cloud of passages, such as one that asks which writer the nearest passages belong to, can still tell them apart. CORAL addresses this. Within the 256 main directions along which passages vary, it reshapes each writer&rsquo;s cloud so that both are equally spread out and stretched in the same directions.</p>
+<p>Two properties of this step matter for what follows. First, it removes one contrast, Kafka against Lispector, and nothing else. Differences between books by the same writer, and between translators of the same writer, are left in place. Second, CORAL uses each passage&rsquo;s author label to transform it. The final space is therefore built to look author-free at the level of averages and spreads; that constellations mix the two writers is partly a consequence of the transform.</p>
+<h3 id="43-bridges">4.3 Bridges</h3>
+<p>Matching passages across two populations runs into a problem called hubness: a few passages sit close to nearly everything, so they win most of the matches. CSLS corrects for this by lowering each passage&rsquo;s score according to how similar it is, on average, to its ten nearest neighbours on the other side. A <strong>bridge</strong> is a pair made of one Kafka passage and one Lispector passage, where each is the best match for the other under this corrected score. The final space yields 1,203 bridges. I rank them by score and examine the top 300.</p>
+<figure id="fig1"><img src="figures/figure-1.webp" width="1160" height="700" alt="Four panels of points for the two writers: the means apart, the means together, the spreads matched, and nine bridges." loading="lazy"><figcaption><strong>Figure 1.</strong> The framework on the real theme-lens vectors, each panel a two-dimensional view of a space of 1,024 or 256 dimensions. (a) Embedding: the writers' means differ (large dots). (b) LEACE moves the means together; panels a and b share axes. (c) CORAL reshapes each writer's spread; the ellipses are one standard deviation in the two directions where the writers' spreads differ most, dashed before and solid after. (d) In the erased space, a bridge joins a Kafka and a Lispector passage that are each other's best match; nine bridges drawn at random from the top 300. A plane cannot show 256 dimensions, so bridge ends look further apart here than they are.</figcaption></figure>
+
+<h3 id="44-the-map-and-its-constellations">4.4 The map and its constellations</h3>
+<p>For display, the erased space is projected to two dimensions with UMAP (McInnes, Healy and Melville 2018). All measurements are made in the full space. <strong>Clusters</strong> are groups of passages found by Ward clustering (Ward 1963) of a ten-dimensional UMAP projection; I use 18. On the erased map I call them <strong>constellations</strong> once they have been named. They are a reading aid, and Section 5.4 shows they are only moderately stable. Names were given by reading each group&rsquo;s most central passages.</p>
+<figure id="fig2"><img src="figures/figure-2.webp" width="1160" height="700" alt="The erased map: red and blue stars in eighteen named constellations, joined by green bridge arcs." loading="lazy"><figcaption><strong>Figure 2.</strong> The map after erasure, with its 18 constellations named by reading their central passages and the 300 strongest bridges drawn as green arcs. Filled outlines hold half of a writer's paragraphs and dotted outlines 85%. A bridge is found in the full 256-dimensional space, so a pair the projection pulls apart draws as a long arc.</figcaption></figure>
+
+<h3 id="45-what-each-test-can-show">4.5 What each test can show</h3>
+<p>I evaluate the framework with five kinds of test. Table 2 lists them, with the question each can answer and the one it cannot.</p>
+<p class="table-caption"><strong>Table 2.</strong> Evaluation design.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Question it answers</th>
+<th>What it cannot show</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Author leakage (held-out classifier)</td>
+<td>How much author signal remains</td>
+<td>Whether what remains is style or subject</td>
+</tr>
+<tr>
+<td>Neighbourhood mixing</td>
+<td>How often a passage&rsquo;s neighbours are by the other writer</td>
+<td>Whether mixed neighbours share anything</td>
+</tr>
+<tr>
+<td>Next-paragraph retrieval</td>
+<td>Whether local, plot-level content survives</td>
+<td>Whether thematic content survives</td>
+</tr>
+<tr>
+<td>Known-answer test (two translations)</td>
+<td>Whether the framework pairs the same content across two voices</td>
+<td>Whether it pairs <em>different</em> texts that share a thought</td>
+</tr>
+<tr>
+<td>Nulls and stability</td>
+<td>Whether bridge counts and bridges depend on the labels, the settings, the lens</td>
+<td>Whether stable bridges are meaningful</td>
+</tr>
+<tr>
+<td>Blind human reading (proposed, Section 5.6)</td>
+<td>Whether readers find erased bridges closer in thought than baselines</td>
+<td>Anything about Kafka and Lispector beyond the pairs read</td>
+</tr>
+</tbody>
+</table></div>
+<blockquote class="box">
+<p><strong>Box 1. Technical details.</strong></p>
+<p><em>Embeddings.</em> Vectors are normalised to unit length. Model revisions are pinned (all-mpnet-base-v2 at <code>e8c3b32</code>, Qwen3-Embedding-0.6B at <code>97b0c61</code>).</p>
+<p><em>LEACE.</em> With Σ the covariance of the vectors x, Σ<sub>xz</sub> their cross-covariance with the one-hot author label z, W = Σ<sup>−1/2</sup> and P the orthogonal projection onto the column space of WΣ<sub>xz</sub>, the erased vector is x − W<sup>+</sup>PW(x − μ).</p>
+<p><em>CORAL.</em> In the top 256 principal directions of the LEACE output (94% of variance for the theme lens), each author&rsquo;s passages are centred, whitened with that author&rsquo;s covariance, and recoloured with the pooled covariance. A small ridge keeps the covariances invertible.</p>
+<p><em>CSLS.</em> For Kafka passage k and Lispector passage l, CSLS(k, l) = 2 cos(k, l) − r<sub>L</sub>(k) − r<sub>K</sub>(l), where r<sub>L</sub>(k) is the mean cosine of k to its 10 nearest Lispector passages and r<sub>K</sub>(l) likewise.</p>
+<p><em>Author leakage.</em> Held-out ROC AUC of a logistic probe and of a 15-nearest-neighbour vote. The eraser is fitted on four of five folds; the classifier is cross-fitted within the held-out fold, so no score comes from a model that saw the passage or the eraser&rsquo;s fitting data.</p>
+<p><em>Mixing.</em> The share of other-author passages among each passage&rsquo;s 15 nearest neighbours, divided by the share random authorship would give. A permutation null (200 shuffles) gives 0.99 to 1.01.</p>
+<p><em>Retrieval.</em> For the 4,790 passages followed by another in the same unit, the rank of the true next paragraph among all other passages (chance recall at 10: 0.19%), and among passages of the same book (chance about 1.9%).</p>
+<p><em>Intervals.</em> Proportions of counts use exact (Clopper and Pearson 1934) intervals; other intervals are 95% percentile bootstraps over passages (2,000 resamples).</p>
+<p><em>Stability.</em> Adjusted Rand index (Hubert and Arabie 1985) between constellations from five UMAP seeds; overlap of the top 300 bridges under each variant.</p>
+<p><em>Software.</em> Python 3.11, scikit-learn 1.8 (Pedregosa et al. 2011), umap-learn 0.5.12, sentence-transformers 6.1. Environment file and code in the repository.</p>
+</blockquote>
+<h2 id="5-results">5. Results</h2>
+<h3 id="51-the-raw-space-sorts-by-writer-whatever-the-lens">5.1 The raw space sorts by writer, whatever the lens</h3>
+<p>Every lens separates the two writers almost perfectly (Table 3). The general sentence model and uninstructed Qwen3 identify the author of an unseen passage with AUC 0.97, and only 13% of a passage&rsquo;s 15 nearest neighbours are by the other writer, against 49% under random authorship.</p>
+<p class="table-caption"><strong>Table 3.</strong> The raw space under four lenses. AUC: held-out linear author probe (0.5 is chance). Mixing: other-author neighbours over the random-authorship rate (1 is fully mixed). R@10: share of passages whose true next paragraph is among the 10 most similar.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Lens</th>
+<th>Author AUC</th>
+<th>Mixing</th>
+<th>R@10</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>General model (mpnet)</td>
+<td>0.969 [0.965, 0.973]</td>
+<td>0.26</td>
+<td>36.3%</td>
+</tr>
+<tr>
+<td>Qwen3, no instruction</td>
+<td>0.970 [0.967, 0.974]</td>
+<td>0.26</td>
+<td>41.6%</td>
+</tr>
+<tr>
+<td>Qwen3, neutral instruction</td>
+<td>0.960 [0.955, 0.965]</td>
+<td>0.31</td>
+<td>29.0%</td>
+</tr>
+<tr>
+<td>Qwen3, theme instruction</td>
+<td>0.949 [0.943, 0.954]</td>
+<td>0.37</td>
+<td>29.9%</td>
+</tr>
+</tbody>
+</table></div>
+<p>Holding the model fixed isolates the instruction. Any instruction to read for theme makes the space less plot-bound: next-paragraph recall falls from 42% to about 30%, because adjacent paragraphs share plot, names and setting, which the instruction steers away from. The instruction also mixes the writers a little. The existential wording mixes them more than the neutral wording (0.37 against 0.31), which is the extent to which the frame built into the prompt pulls the two writers together before any erasure. None of the instructions comes close to removing the author: the probe&rsquo;s AUC stays at 0.95 or above.</p>
+<figure id="fig3"><img src="figures/figure-3.webp" width="1160" height="700" alt="Three maps of the same paragraphs: general model, theme lens, and theme lens after erasure." loading="lazy"><figcaption><strong>Figure 3.</strong> The same 5,324 paragraphs in three UMAP maps: the general model (mpnet), Qwen3 with the theme instruction, and the theme lens after erasure. Red is Kafka, blue Lispector. Filled outlines hold half of a writer's paragraphs and dotted outlines 85%. Distance and direction across a map carry no meaning; only neighbourhoods do.</figcaption></figure>
+
+<h3 id="52-what-erasure-removes-and-what-it-costs">5.2 What erasure removes, and what it costs</h3>
+<p>Table 4 follows the theme lens through each step. The full table for all four lenses is in Appendix A.</p>
+<p class="table-caption"><strong>Table 4.</strong> Erasure on the theme lens, with 95% intervals. kNN AUC: held-out 15-nearest-neighbour author vote. Book R@10: next-paragraph recall among passages of the same book.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Step</th>
+<th>Linear AUC</th>
+<th>kNN AUC</th>
+<th>Mixing</th>
+<th>R@10</th>
+<th>Book R@10</th>
+<th>Dimensions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Raw</td>
+<td>0.949 [0.943, 0.954]</td>
+<td>0.936 [0.929, 0.942]</td>
+<td>0.37 [0.36, 0.38]</td>
+<td>29.9% [28.6, 31.1]</td>
+<td>36.8%</td>
+<td>1,024</td>
+</tr>
+<tr>
+<td>LEACE</td>
+<td>0.574 [0.558, 0.590]</td>
+<td>0.893 [0.885, 0.902]</td>
+<td>0.46 [0.45, 0.47]</td>
+<td>29.3% [28.0, 30.6]</td>
+<td>36.6%</td>
+<td>1,024</td>
+</tr>
+<tr>
+<td>LEACE + truncation to 256</td>
+<td></td>
+<td></td>
+<td>0.44 [0.43, 0.45]</td>
+<td>29.6% [28.4, 30.9]</td>
+<td>36.8%</td>
+<td>256</td>
+</tr>
+<tr>
+<td>LEACE + CORAL (the map)</td>
+<td>0.581 [0.566, 0.597]</td>
+<td>0.720 [0.706, 0.734]</td>
+<td>0.79 [0.78, 0.79]</td>
+<td>24.9% [23.8, 26.1]</td>
+<td>34.8%</td>
+<td>256</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>The linear signal goes.</strong> LEACE takes the linear probe from 0.95 to 0.57. The small excess over 0.5 is the cost of fitting the eraser on other passages than those it is tested on.</p>
+<p><strong>A nonlinear trace remains.</strong> A nearest-neighbour vote still recovers the author with AUC 0.89 after LEACE alone, because each writer&rsquo;s cloud keeps its own shape once the averages coincide. CORAL reduces this to 0.72. That is well above chance: neighbourhoods on the map are still partly sorted by writer. Mixing rises from 0.37 to 0.79, so a passage&rsquo;s neighbours are now 38% by the other writer, against 49% under random authorship.</p>
+<figure id="fig4"><img src="figures/figure-4.webp" width="1160" height="700" alt="Three line charts across raw, LEACE, truncation and CORAL: author recoverability falls, neighbour mixing rises, next-paragraph recall falls slightly." loading="lazy"><figcaption><strong>Figure 4.</strong> What erasure removes and what it costs, on the theme lens, with 95% intervals. (a) Held-out ROC AUC of a linear probe and a 15-nearest-neighbour vote for the author. (b) Other-author neighbours as a share of chance. (c) Share of passages whose true next paragraph is in the top 10, among all books and among the same book. Truncation is LEACE followed by projection to 256 dimensions, without CORAL.</figcaption></figure>
+
+<p><strong>Book identity survives.</strong> Erasure removes one contrast, and the others are untouched. A classifier asked which of a writer&rsquo;s five books a passage comes from succeeds 89% of the time for Kafka before erasure and 91% after (majority class: 42%), and 72% and 75% for Lispector (majority class: 48%). Book identity bundles translator, genre and period. The map therefore stops separating the two writers on average, but it still separates their books, and any reader of a bridge should know which books its ends come from.</p>
+<figure id="fig5"><img src="figures/figure-5.webp" width="1160" height="700" alt="Bars showing how often a passage's book is guessed within its writer, before and after erasure, above the majority-class line." loading="lazy"><figcaption><strong>Figure 5.</strong> Book identity survives erasure. A classifier asked which of a writer's five books a passage comes from succeeds 89% of the time for Kafka before erasure and 91% after, and 72% and 75% for Lispector; the dashed line is the majority class. Erasure removes the contrast between the writers and leaves the differences between books, translators and genres in place.</figcaption></figure>
+
+<p><strong>The cost is CORAL&rsquo;s, and it falls mostly across books.</strong> Next-paragraph recall at 10 is unchanged by LEACE and by truncation to 256 dimensions (29.3% and 29.6% against 29.9%), and falls to 24.9% with CORAL, a relative loss of 17%. The median rank of the true next paragraph moves from 60 to 102, still far better than chance (recall at 10 by chance is 0.19%). Within a single book the loss is much smaller, from 36.8% to 34.8% (5% relative). Most of the cost therefore comes from passages of other books, which erasure has moved closer and which now compete with the true next paragraph; the passage&rsquo;s own neighbourhood is barely damaged. Next-paragraph retrieval measures plot-level content, which the theme instruction is designed to discount, so it is a basic check, not a measure of thematic content.</p>
+<p><strong>The general model behaves differently.</strong> On mpnet, erasure mixes the writers less (0.67) and costs nothing in recall (36.3% before, 36.4% after). The trade-off between mixing and recall is specific to the lens.</p>
+<h3 id="53-a-known-answer-two-translations-of-the-metamorphosis">5.3 A known answer: two translations of <em>The Metamorphosis</em></h3>
+<p>Bernofsky (2014) and the Muirs (1933) translated the same German paragraphs in the same order. That gives a test with a known answer: take the two translations as two &ldquo;authors&rdquo;, apply the framework, and check whether it pairs each paragraph with its own other translation. This is the framework&rsquo;s claim, finding the same content across two voices, in the one case where the right answer is not a matter of judgement.</p>
+<p><strong>Ground truth without embeddings.</strong> The novella has three parts. Within each part, I place every passage on a scale from 0 to 1 by the share of the part&rsquo;s words that precede it; the translations run to 21,599 and 21,034 words, in 40/41/42 and 39/41/42 passages per part. A Bernofsky passage and a Muir passage are counterparts when their stretches overlap by at least half of the shorter one. This gives 129 counterpart pairs and covers all 123 Bernofsky and all 122 Muir passages. Because the alignment uses position only, the test does not score embeddings against themselves.</p>
+<figure id="fig6"><img src="figures/figure-6.webp" width="1160" height="700" alt="Two rows of dots, the two translations of The Metamorphosis, joined by vertical lines that mark their bridges, in three parts." loading="lazy"><figcaption><strong>Figure 6.</strong> The alignment behind the known-answer test. Each dot is a passage of one translation of <em>The Metamorphosis</em>, placed by the share of its part's words that precede it, with the two translations laid out one above the other. Each line is a bridge found between them: 110 of 116 join a passage to its own other translation (green) and 6 to the stretch next door (dashed).</figcaption></figure>
+
+<p><strong>The framework recovers the answer.</strong> Table 5 reports, for each condition, the bridges found between the two translations, their precision (the share that join counterparts), their recall (the share of Bernofsky passages that end up in a correct bridge), and top-1 accuracy (the share of Bernofsky passages whose single best match is a counterpart).</p>
+<p class="table-caption"><strong>Table 5.</strong> The known-answer test. Chance top-1 accuracy is 0.9%.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Bridges</th>
+<th>Precision</th>
+<th>Recall</th>
+<th>Top-1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>General model (mpnet), raw</td>
+<td>113</td>
+<td>0.94</td>
+<td>0.86</td>
+<td>0.91</td>
+</tr>
+<tr>
+<td>Qwen3, no instruction, raw</td>
+<td>118</td>
+<td>0.95</td>
+<td>0.91</td>
+<td>0.94</td>
+</tr>
+<tr>
+<td>Qwen3, neutral, raw</td>
+<td>106</td>
+<td>0.95</td>
+<td>0.82</td>
+<td>0.85</td>
+</tr>
+<tr>
+<td>Qwen3, theme, raw</td>
+<td>115</td>
+<td>0.96</td>
+<td>0.89</td>
+<td>0.90</td>
+</tr>
+<tr>
+<td>Theme, translator erased (LEACE)</td>
+<td>115</td>
+<td>0.96</td>
+<td>0.89</td>
+<td>0.90</td>
+</tr>
+<tr>
+<td>Theme, translator erased (LEACE + CORAL, 16 dims)</td>
+<td>106</td>
+<td>0.94</td>
+<td>0.81</td>
+<td>0.83</td>
+</tr>
+<tr>
+<td>Theme, translator erased (LEACE + CORAL, 32 dims)</td>
+<td>114</td>
+<td>0.96</td>
+<td>0.89</td>
+<td>0.90</td>
+</tr>
+<tr>
+<td>Theme, translator erased (LEACE + CORAL, 64 dims)</td>
+<td>118</td>
+<td>0.95</td>
+<td>0.91</td>
+<td>0.92</td>
+</tr>
+<tr>
+<td>Theme, the map&rsquo;s own eraser</td>
+<td>116</td>
+<td>0.95</td>
+<td>0.89</td>
+<td>0.90</td>
+</tr>
+</tbody>
+</table></div>
+<p>In every condition, about 95% of bridges join a paragraph to its own translation, and the &ldquo;wrong&rdquo; ones land on an adjacent, overlapping stretch (precision rises to 0.98 to 1.00 if any overlap counts). Erasing the translator does not reduce accuracy, except when CORAL is squeezed to 16 dimensions. (CORAL is limited to 64 dimensions here because each translation has only about 120 passages.) The last row applies the map&rsquo;s own author eraser, fitted on the whole corpus, to both translations: it too leaves the answer intact. <strong>Erasure does not destroy the content the instrument relies on.</strong></p>
+<p><strong>The test is easy.</strong> Raw embeddings already score about 0.90. Two translations of the same paragraph are far more alike than two different texts, and the translators&rsquo; voices are weak by comparison: a classifier separating Bernofsky from the Muirs reaches an AUC of only 0.62 to 0.67 (with aligned passages kept in the same cross-validation fold, so that content cannot give the answer away), against 0.95 to 0.97 for Kafka against Lispector. The test therefore shows that erasure is safe for content matching; it cannot show that erasure is necessary.</p>
+<p><strong>Voice does not pull matches away.</strong> A harder version searches each Muir passage against all 2,309 Kafka passages in the corpus. Most of Kafka&rsquo;s <em>Complete Stories</em> is also the Muirs&rsquo; translation, so a space organised by translator would match a Muir passage to another Muir story. It does not: the counterpart comes first for 89% of Muir passages on the raw theme lens and 90% on the map, and a different Muir-translated story comes first for 1 of 122.</p>
+<p><strong>A distance ladder.</strong> On the map, the median cosine between two translations of one paragraph is 0.88; between the two ends of a shown bridge, 0.63; between adjacent paragraphs of one text, 0.45; between random Kafka passages, 0.00. Bridge ends are selected for closeness, so this comparison is descriptive, but it places bridges between &ldquo;same text, different voice&rdquo; and &ldquo;same story, next paragraph&rdquo;.</p>
+<figure id="fig7"><img src="figures/figure-7.webp" width="1160" height="700" alt="Bar chart of top-1 accuracy for nine conditions, and a ladder of median cosine similarity for four kinds of pair." loading="lazy"><figcaption><strong>Figure 7.</strong> The known-answer test. (a) Top-1 accuracy: the share of Bernofsky passages whose single best match is the counterpart in the Muirs' translation, for each condition of Table 5; the dashed line is chance. (b) Median cosine similarity on the map, with the middle half, for four kinds of pair; bridge ends are chosen for closeness, so the comparison is descriptive.</figcaption></figure>
+
+<p><strong>Individual bridges depend on wording.</strong> For the 56 shown bridges whose Kafka end is in <em>The Metamorphosis</em>, I replaced the Bernofsky passage by its Muir counterpart and asked whether the same Lispector passage remains its best match. It does for 21 (38%); for most of the rest it drops to second place (median rank 2). A bridge is a strong but local preference: the Lispector partner stays near the top, but which passage wins depends on the translator&rsquo;s wording.</p>
+<p><strong>What this test does not validate.</strong> Counterparts are the same text. Bridges between Kafka and Lispector join different texts that may, or may not, share a thought. The test shows that the framework can see through a change of voice to identical content and that erasure preserves this ability. Whether it finds shared thought in different content is the question for human readers (Section 5.6).</p>
+<h3 id="54-bridges-nulls-and-stability">5.4 Bridges: nulls and stability</h3>
+<p><strong>Bridge counts are not evidence.</strong> The map yields 1,203 bridges. If the author labels are shuffled at random and erasure and matching are repeated, the framework finds 1,283 to 1,336 &ldquo;bridges&rdquo; (20 shuffles), and even the weakest of their top 300 scores higher (0.27 to 0.28) than the weakest of the real top 300 (0.18). Shuffled &ldquo;cross-author&rdquo; pairs include passages from the same book, which are easy to match. Mutual matching will always find pairs; the number of pairs and their scores say nothing about kinship between two writers. For the same reason, I do not report that bridges outscore random pairs, which is guaranteed by how they are selected.</p>
+<figure id="fig8"><img src="figures/figure-8.webp" width="1160" height="700" alt="Scatter of the number of bridges and the weakest top-300 score for 20 shuffled labellings, against the real labelling." loading="lazy"><figcaption><strong>Figure 8.</strong> The shuffled-label test. Each grey dot is one run in which the author labels were shuffled at random and erasure and matching repeated: the number of bridges found, and the CSLS score of the weakest of the top 300. The real labels (green) give fewer bridges and a weaker top 300 than the shuffled ones.</figcaption></figure>
+
+<p><strong>Bridges survive tuning.</strong> Table 6 compares the top 300 bridges under each variant with the map&rsquo;s own.</p>
+<p class="table-caption"><strong>Table 6.</strong> How many of the map&rsquo;s top 300 bridges are also in the variant&rsquo;s top 300.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Variant</th>
+<th>What changes</th>
+<th>Top-300 overlap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CORAL at 128 dimensions</td>
+<td>tuning</td>
+<td>256 (85%)</td>
+</tr>
+<tr>
+<td>CORAL at 512 dimensions</td>
+<td>tuning</td>
+<td>281 (94%)</td>
+</tr>
+<tr>
+<td>CSLS with 5 neighbours</td>
+<td>tuning</td>
+<td>260 (87%)</td>
+</tr>
+<tr>
+<td>CSLS with 20 neighbours</td>
+<td>tuning</td>
+<td>270 (90%)</td>
+</tr>
+<tr>
+<td>No erasure</td>
+<td>erasure</td>
+<td>126 (42%)</td>
+</tr>
+<tr>
+<td>Erase book (10 classes), not author</td>
+<td>erasure</td>
+<td>154 (51%)</td>
+</tr>
+<tr>
+<td>Qwen3, neutral instruction</td>
+<td>lens</td>
+<td>87 (29%)</td>
+</tr>
+<tr>
+<td>Qwen3, no instruction</td>
+<td>lens</td>
+<td>40 (13%)</td>
+</tr>
+<tr>
+<td>General model (mpnet)</td>
+<td>lens</td>
+<td>15 (5%)</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Bridges depend on the lens.</strong> Changing the model, or only the instruction, changes most of the bridges. This is the most important limit on interpretation: the bridges are the theme lens&rsquo;s pairs, and a different lens would propose different ones. Of the 300, 100 are found by at least seven of the nine variants and 6 by all nine. I suggest that readers start from these.</p>
+<figure id="fig9"><img src="figures/figure-9.webp" width="1160" height="700" alt="Bar chart of how many of the map's top 300 bridges each variant keeps, grouped by tuning, erasure and lens." loading="lazy"><figcaption><strong>Figure 9.</strong> How many of the map's top 300 bridges are also in the top 300 of each variant (Table 6), grouped by what changes.</figcaption></figure>
+
+<p><strong>Erasure changes a third of the list.</strong> 115 of the 300 shown bridges are not found at all without erasure, and 185 are. Most of the strongest and most stable bridges exist before erasure; what erasure adds is a set of further pairs (Section 5.5 gives examples).</p>
+<figure id="fig10"><img src="figures/figure-10.webp" width="1160" height="700" alt="Grouped bar chart: for each of Kafka's five books, five bars count the 300 strongest bridges that end in each of Lispector's books." loading="lazy"><figcaption><strong>Figure 10.</strong> Which books the ends of the 300 strongest bridges come from. Each group is a Kafka book; the five bars in it are Lispector's books, and each bar counts bridges joining a passage of the group's book to one of that book. The two Complete Stories volumes and the crônicas, the largest books, account for most bridge ends.</figcaption></figure>
+
+<p><strong>Constellations are moderately stable.</strong> Re-running the ten-dimensional projection with four other random seeds and clustering again gives adjusted Rand indices of 0.61 to 0.67 against the map&rsquo;s constellations (1 is identical, 0 is chance). The broad regions recur; their boundaries do not. Constellations are best treated as a way to browse the map, not as findings.</p>
+<p><strong>The map mixes the writers, by construction.</strong> Clustering the raw space the same way gives 12 of 18 clusters that are at least 90% one writer. On the map, Kafka&rsquo;s share of a constellation ranges from 28% to 89%. Since CORAL makes the two writers&rsquo; clouds match in average and spread, a mixed map is expected. The informative cases are the regions that stay lopsided despite the transform. The most lopsided, The Stage (89% Kafka, 44 passages), is almost entirely one Kafka text, the dramatic fragment &ldquo;The Warden of the Tomb&rdquo;, with five Lispector passages.</p>
+<figure id="fig11"><img src="figures/figure-11.webp" width="1160" height="700" alt="Two dot strips of Kafka's share in each of 18 clusters: extreme in the raw space, moderate on the erased map." loading="lazy"><figcaption><strong>Figure 11.</strong> Kafka's share of each of 18 clusters, from clustering the raw space and on the erased map. Twelve raw clusters are at least 90% one writer; the erased map's constellations range from 28% to 89% Kafka.</figcaption></figure>
+
+<p>The five are informative. Two are scenes of rank and ceremony: in &ldquo;Mystery in São Cristóvão&rdquo; a rooster, a bull and a &ldquo;lord &hellip; under his mask&rdquo; freeze at a window, and in &ldquo;William Harvey&rdquo; a powerful man rings for his butler while his guest tells a fortune. Two come from <em>The Hour of the Star</em>: a pair of children trading claims in quick dialogue, and Macabéa&rsquo;s death, which the narrator stages with &ldquo;the Prince of Darkness&rdquo; and &ldquo;Et tu, Brute?!&rdquo;. The fifth, a crônica, reconstructs a noblewoman&rsquo;s castle, grooms and horses. What ties them to the play is a court-like cast (prince, chamberlain, lord, butler, noblewoman) and a mode of speech, dialogue or tableau, more than a shared idea. So the constellation is best read as the play&rsquo;s form surviving erasure, not as a convergence of thought. The erasure removes what separates Kafka from Lispector on average, but a drama with speaker tags and stage directions is a single text with its own conventions, and no average over two writers can absorb it. The five Lispector passages join it because they borrow the theatre&rsquo;s furniture. This agrees with the finding that book identity survives (Section 5.2): the map is mixed on average, and where it is lopsided, genre and form are often the reason.</p>
+<h3 id="55-illustrations">5.5 Illustrations</h3>
+<p>I give five bridges to show what the framework surfaces and how it differs from simpler matching. They are illustrations, not evidence: they were chosen by me, and their value must be judged by readers. For each Kafka passage I also report the Lispector passage chosen by TF-IDF cosine, a purely lexical baseline that matches shared words.</p>
+<p><strong>Sleep</strong> (<em>The Metamorphosis</em> / <em>The Passion According to G.H.</em>; found by 6 of 9 variants). Critics pair these books for the insect. The bridge pairs two passages about sleep once the body has stopped being human. Gregor cannot go back to sleep because &ldquo;it was his habit to sleep on his right side, and in his present state he was unable to assume this position.&rdquo; G.H. falls asleep &ldquo;as immediately as a roach falls asleep on a vertical wall. There was no human stability in my sleep&rdquo;. The lexical baseline instead picks a Lispector story about an alarm clock and waking, which shares the words for sleep but not the situation. The same situation is rendered in opposite grammars: Kafka&rsquo;s is a practical problem stated in the syntax of routine, Lispector&rsquo;s a simile that dissolves the human. This is the kind of contrast the framework can bring to a reader, and the kind of reading it cannot do.</p>
+<p><strong>Last songs</strong> (&ldquo;Josephine the Singer, or the Mouse Folk&rdquo; / <em>The Hour of the Star</em>; 6 of 9). The last story Kafka finished and the last book Lispector saw into print meet near their endings. In Kafka (in the Muirs&rsquo; translation), &ldquo;The time will soon come when her last notes sound and die into silence.&rdquo; In Lispector (Moser&rsquo;s translation), after Macabéa&rsquo;s death, &ldquo;With her dead, the bells were ringing but without their bronzes giving them sound.&rdquo; Neither text&rsquo;s title, author or position in its book was visible to the model; the pairing rests on the translated text alone. The lexical baseline picks a passage from <em>G.H.</em> on transcendence.</p>
+<p><strong>The Departure</strong> (&ldquo;The Departure&rdquo; / &ldquo;Sketch of the Demon Horse&rdquo;; all 9 variants). A rider leaves without a destination (&ldquo;&lsquo;Where is the master going?&rsquo; &lsquo;I don&rsquo;t know&rsquo;&rdquo;) and a narrator answers a horse&rsquo;s night call (&ldquo;No, I cannot stop going&rdquo;). This is one of the six bridges every variant finds. Its stability comes partly from a shared object, the horse, which the lexical baseline also picks up (it chooses &ldquo;Form&rdquo;, a short piece in Lispector&rsquo;s <em>Complete Stories</em> about horses).</p>
+<p><strong>Two bridges that exist only after erasure.</strong> Among the bridges that erasure adds, some join a situation and some an idea. <em>Amerika</em>&rsquo;s head cook &ldquo;dictating a letter to a young typist&rdquo; is paired with Lispector&rsquo;s &ldquo;Miss Algrave&rdquo;, who &ldquo;was the perfect typist&rdquo;: a shared job, found by 8 of 9 variants. Kafka&rsquo;s aphorism on free will (&ldquo;he is free inasmuch as he can choose the pace and the course of his life&rdquo;) is paired with a passage of <em>Água Viva</em> on &ldquo;a certain kind of thinking-feeling that I&rsquo;ll call &lsquo;freedom&rsquo;&rdquo; (also 8 of 9). Erasure does not only add pairs of the second kind. Whether the pairs it adds are worth more than the pairs it loses is a judgement only readers can make (Section 5.6).</p>
+<p><strong>A sound in the night</strong> (&ldquo;The Burrow&rdquo; / &ldquo;Silent Night, Holy Night&rdquo;; 5 of 9). Both passages describe a constant sound with no source. Kafka&rsquo;s creature finds &ldquo;this very uniformity of the noise everywhere&rdquo; disturbing and sets out to explain it; Lispector&rsquo;s narrator hears &ldquo;air music&rdquo; that &ldquo;has no melody&rdquo; and receives it as a blessing. The bridge matches the situation, not the response to it. I include it as an example of the limit of the framework: it proposes a shared occasion, and the reader supplies the difference. It is also the least stable of the five, and before erasure the theme lens matches the Kafka passage to a different Lispector crônica.</p>
+<h3 id="56-reading-the-bridges-blind">5.6 Reading the bridges blind</h3>
+<p>The measurements above cannot say whether erasure and hub-corrected matching surface pairs that readers judge closer in thought than simpler methods do. One way to take this analysis further is a blind reading, and this section offers a blueprint for it. I have not run it, and no result in this paper depends on it.</p>
+<p><strong>Arms.</strong> Pairs would come from six sources: the map&rsquo;s bridges; bridges from the same lens without erasure (isolating erasure); plain cosine matches in the erased space (isolating hub correction); cosine matches from the general model; TF-IDF matches (a lexical baseline); and random cross-author pairs. Each arm would contribute 35 pairs.</p>
+<p><strong>Paired choice.</strong> In addition, 70 triads would show one anchor passage and two candidates from the other writer, one from the map&rsquo;s bridges and one from a rival arm, and ask which is closer in thought. This controls for the anchor, which absolute scoring cannot.</p>
+<p><strong>Blinding.</strong> Titles, section names and character names would be removed and replaced with a neutral marker; the side on which each writer appears would be randomised; the key would be held by a third person; and the rubric, with worked examples for each score, and the analysis plan would be fixed in a dated file before any items are dealt.</p>
+<p><strong>Readers and analysis.</strong> Several readers with training in comparative literature, German or Lusophone studies would score independently. Scores would be 2 (the passages turn on the same thought), 1 (a shared motif or situation only) and 0 (unrelated). The analysis would report exact intervals per arm, the probability that a map bridge outscores each rival arm, weighted kappa between readers (Cohen 1968), and binomial tests for the triads, whatever they show, including a null or negative result.</p>
+<p>A small pilot reading of 60 pairs by a language model, on the previous version of the corpus, is reported in Appendix B. It is not evidence for the claims of this paper.</p>
+<h2 id="6-discussion">6. Discussion</h2>
+<p><strong>What the framework can and cannot support.</strong> Erasure makes it possible to ask which paragraphs of two writers lie close to each other once the most obvious signal of who wrote them is removed. It proposes candidates. The known-answer test shows that it recognises the same content through a change of voice and that erasure does not blunt this. It does not show that the candidates share a thought, and the stability results show that they are the candidates of a particular lens. A bridge supports a question for a reader, &ldquo;what do these two passages have in common, and how does each writer treat it?&rdquo;, not an answer.</p>
+<p><strong>Style and thought.</strong> The framework assumes that what a passage says can be separated from how it says it. For Kafka and Lispector that assumption is exactly what many readers would dispute: much of what these writers think is carried by their syntax. Brooks&rsquo;s objection to paraphrase applies with full force (Brooks 1947). I do not claim to have separated thought from style. I claim to have removed one measurable contrast and to have found places where two different styles meet on similar ground. In the best cases, such as the sleep passages above, a bridge becomes a controlled comparison: the same occasion, rendered in two grammars. That is a use of the framework that turns the objection into the object of study.</p>
+<p><strong>Translation.</strong> Everything here is read in English. Part of what is erased as &ldquo;author&rdquo; belongs to a dozen translators, to two source languages and to genre. The <em>Metamorphosis</em> test suggests that, for embeddings, two translators of the same text differ much less than two writers do, and that a paragraph&rsquo;s content outweighs its translator&rsquo;s voice. It also shows that individual bridges are sensitive to the translator&rsquo;s wording. A study in the original languages, with a multilingual model, would remove this layer; I leave it to future work.</p>
+<p>A cleaner design would also compare authors who wrote in English, which removes translation altogether. I did not do this. I chose Kafka and Lispector because they are my favourite writers and I was curious to see the clusters for myself, and the results should be read as a case study on that basis, not as the best test of the method.</p>
+<p><strong>Limits.</strong> (1) Erasure removes the Kafka/Lispector contrast only on average and in spread; a nearest-neighbour classifier still recovers the author with AUC 0.72. (2) Book identity, and with it translator and genre, is untouched. (3) Erasure costs plot-level content, mostly through competition across books. (4) Erasure removes whatever differs between the writers on average, including true differences of subject; convergences on the map are partly produced by the transform. (5) The theme instruction presupposes the frame critics use for these writers. (6) Bridges depend on the lens. (7) Constellations are only moderately stable. (8) No human evaluation has been done; Section 5.6 only sketches one. (9) The case study is one pair of writers, in translation, chosen by preference; whether the framework transfers to other pairs is untested.</p>
+<h2 id="7-conclusion">7. Conclusion</h2>
+<p>Concept erasure can make a pair of writers comparable in an embedding space without destroying the content the comparison needs, as a test with a known answer shows. It does so at a measurable cost, it removes only the contrast it is given, and the pairs it proposes depend on the lens through which the texts are read. Used with those limits stated, it is a way to generate candidate passages for comparison at the scale of whole bodies of work, and a way to make the relation between shared content and different style concrete enough to read.</p>
+<h2 id="data-and-code-availability">Data and code availability</h2>
+<p>Repository: <a href="https://github.com/snes19xx/mapping-kafka-lispector-ml">github.com/snes19xx/mapping-kafka-lispector-ml</a>, under an MIT license. The repository contains the analysis code, pinned environment, configuration, and the curation file (constellation names and illustrations). It distributes no source texts or precomputed embeddings; readers embed, align and bridge their own lawfully acquired copies with the scripts provided.</p>
+<h2 id="references">References</h2><div class="references">
+<p>Arnds, Peter. 2023. &ldquo;From Defeat to Resilience: The Human Cockroach in World Literature after Kafka.&rdquo; <em>World Literature Studies</em> 15 (2): 56-65. https://doi.org/10.31577/WLS.2023.15.2.5.</p>
+<p>Belrose, Nora, David Schneider-Joseph, Shauli Ravfogel, Ryan Cotterell, Edward Raff, and Stella Biderman. 2023. &ldquo;LEACE: Perfect Linear Concept Erasure in Closed Form.&rdquo; In <em>Advances in Neural Information Processing Systems 36</em> (NeurIPS 2023).</p>
+<p>Brooks, Cleanth. 1947. &ldquo;The Heresy of Paraphrase.&rdquo; In <em>The Well Wrought Urn: Studies in the Structure of Poetry</em>. New York: Reynal and Hitchcock.</p>
+<p>Burrows, John. 2002. &ldquo;&lsquo;Delta&rsquo;: A Measure of Stylistic Difference and a Guide to Likely Authorship.&rdquo; <em>Literary and Linguistic Computing</em> 17 (3): 267-287.</p>
+<p>Cixous, Hélène. 1991. <em>Readings: The Poetics of Blanchot, Joyce, Kafka, Kleist, Lispector, and Tsvetayeva</em>. Edited and translated by Verena Andermatt Conley. Minneapolis: University of Minnesota Press. (verified; confirm editor/translator credit)</p>
+<p>Clopper, C. J., and E. S. Pearson. 1934. &ldquo;The Use of Confidence or Fiducial Limits Illustrated in the Case of the Binomial.&rdquo; <em>Biometrika</em> 26 (4): 404-413.</p>
+<p>Cohen, Jacob. 1968. &ldquo;Weighted Kappa: Nominal Scale Agreement with Provision for Scaled Disagreement or Partial Credit.&rdquo; <em>Psychological Bulletin</em> 70 (4): 213-220.</p>
+<p>Conneau, Alexis, Guillaume Lample, Marc&rsquo;Aurelio Ranzato, Ludovic Denoyer, and Hervé Jégou. 2018. &ldquo;Word Translation Without Parallel Data.&rdquo; In <em>International Conference on Learning Representations</em> (ICLR 2018).</p>
+<p>Da, Nan Z. 2019. &ldquo;The Computational Case against Computational Literary Studies.&rdquo; <em>Critical Inquiry</em> 45 (3): 601-639.</p>
+<p>Dexter, Joseph P., Theodore Katz, Nilesh Tripuraneni, Tathagata Dasgupta, Ajay Kannan, James A. Brofos, Jorge A. Bonilla Lopez, Lea A. Schroeder, Adriana Casarez, Maxim Rabinovich, Ayelet Haimson Lushkov, and Pramit Chaudhuri. 2017. &ldquo;Quantitative Criticism of Literary Relationships.&rdquo; <em>Proceedings of the National Academy of Sciences</em> 114 (16): E3195-E3204. https://doi.org/10.1073/pnas.1611910114.</p>
+<p>Dixon, Paul B. 1981. &ldquo;&lsquo;A paixão segundo G. H.&rsquo;: Kafka&rsquo;s Passion According to Clarice Lispector.&rdquo; <em>Romance Notes</em> 21 (3): 298-304.</p>
+<p>Elazar, Yanai, and Yoav Goldberg. 2018. &ldquo;Adversarial Removal of Demographic Attributes from Text Data.&rdquo; In <em>Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing</em>, 11-21. Brussels.</p>
+<p>Fan, Yu, Yang Tian, Shauli Ravfogel, Mrinmaya Sachan, Elliott Ash, and Alexander Hoyle. 2025. &ldquo;The Medium Is Not the Message: Deconfounding Document Embeddings via Linear Concept Erasure.&rdquo; In <em>Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing</em>, 32124-32143.</p>
+<p>Hubert, Lawrence, and Phipps Arabie. 1985. &ldquo;Comparing Partitions.&rdquo; <em>Journal of Classification</em> 2: 193-218.</p>
+<p>Long, Hoyt, and Richard Jean So. 2016. &ldquo;Literary Pattern Recognition: Modernism between Close Reading and Machine Learning.&rdquo; <em>Critical Inquiry</em> 42 (2): 235-267.</p>
+<p>McInnes, Leland, John Healy, and James Melville. 2018. &ldquo;UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction.&rdquo; arXiv:1802.03426.</p>
+<p>Pedregosa, Fabian, et al. 2011. &ldquo;Scikit-learn: Machine Learning in Python.&rdquo; <em>Journal of Machine Learning Research</em> 12: 2825-2830.</p>
+<p>Radovanović, Miloš, Alexandros Nanopoulos, and Mirjana Ivanović. 2010. &ldquo;Hubs in Space: Popular Nearest Neighbors in High-Dimensional Data.&rdquo; <em>Journal of Machine Learning Research</em> 11: 2487-2531.</p>
+<p>Ravfogel, Shauli, Yanai Elazar, Hila Gonen, Michael Twiton, and Yoav Goldberg. 2020. &ldquo;Null It Out: Guarding Protected Attributes by Iterative Nullspace Projection.&rdquo; In <em>Proceedings of the 58th Annual Meeting of the Association for Computational Linguistics</em>, 7237-7256.</p>
+<p>Reimers, Nils, and Iryna Gurevych. 2019. &ldquo;Sentence-BERT: Sentence Embeddings Using Siamese BERT-Networks.&rdquo; In <em>Proceedings of EMNLP-IJCNLP 2019</em>, 3982-3992.</p>
+<p>Rybicki, Jan. 2012. &ldquo;The Great Mystery of the (Almost) Invisible Translator: Stylometry in Translation.&rdquo; In <em>Quantitative Methods in Corpus-Based Translation Studies</em>, edited by Michael P. Oakes and Meng Ji, 231-248. Amsterdam: John Benjamins.</p>
+<p>Rybicki, Jan, and Magda Heydel. 2013. &ldquo;The Stylistics and Stylometry of Collaborative Translation: Woolf&rsquo;s <em>Night and Day</em> in Polish.&rdquo; <em>Literary and Linguistic Computing</em> 28 (4): 708-717. https://doi.org/10.1093/llc/fqt027.</p>
+<p>Song, Kaitao, Xu Tan, Tao Qin, Jianfeng Lu, and Tie-Yan Liu. 2020. &ldquo;MPNet: Masked and Permuted Pre-training for Language Understanding.&rdquo; In <em>Advances in Neural Information Processing Systems 33</em>.</p>
+<p>Stamatatos, Efstathios. 2009. &ldquo;A Survey of Modern Authorship Attribution Methods.&rdquo; <em>Journal of the American Society for Information Science and Technology</em> 60 (3): 538-556.</p>
+<p>Sun, Baochen, Jiashi Feng, and Kate Saenko. 2016. &ldquo;Return of Frustratingly Easy Domain Adaptation.&rdquo; In <em>Proceedings of the Thirtieth AAAI Conference on Artificial Intelligence</em>.</p>
+<p>Underwood, Ted. 2019. <em>Distant Horizons: Digital Evidence and Literary Change</em>. Chicago: University of Chicago Press.</p>
+<p>Ward, Joe H. 1963. &ldquo;Hierarchical Grouping to Optimize an Objective Function.&rdquo; <em>Journal of the American Statistical Association</em> 58 (301): 236-244.</p>
+<p>Wegmann, Anna, Marijn Schraagen, and Dong Nguyen. 2022. &ldquo;Same Author or Just Same Topic? Towards Content-Independent Style Representations.&rdquo; In <em>Proceedings of the 7th Workshop on Representation Learning for NLP</em>, 249-268. Dublin.</p>
+<p>Zhang, Yanzhao, et al. 2025. &ldquo;Qwen3 Embedding: Advancing Text Embedding and Reranking Through Foundation Models.&rdquo; arXiv:2506.05176.</p>
+<p><strong>Primary texts</strong></p>
+<p>Kafka, Franz. <em>Amerika: The Missing Person</em>. Translated by Mark Harman. New York: Schocken, 2008.</p>
+<p>Kafka, Franz. <em>Aphorisms</em>. Translated by Willa and Edwin Muir and by Michael Hofmann. New York: Schocken, 2015.</p>
+<p>Kafka, Franz. <em>The Complete Stories</em>. Edited by Nahum N. Glatzer. New York: Schocken, 2012.</p>
+<p>Kafka, Franz. <em>Letters to Milena</em>. Translated by Philip Boehm. New York: Schocken, 2013.</p>
+<p>Kafka, Franz. <em>The Metamorphosis</em>. Translated by Susan Bernofsky. New York: W. W. Norton, 2014.</p>
+<p>Lispector, Clarice. <em>Água Viva</em>. Translated by Stefan Tobler, introduction by Benjamin Moser. London: Penguin Books (Penguin Modern Classics), 2012.</p>
+<p>Lispector, Clarice. <em>The Complete Stories</em>. Translated by Katrina Dodson. Edited by Benjamin Moser. New York: New Directions, 2015.</p>
+<p>Lispector, Clarice. <em>The Hour of the Star</em>. Translated by Benjamin Moser. New York: New Directions, 2011.</p>
+<p>Lispector, Clarice. <em>The Passion According to G.H.</em> Translated by Idra Novey. London: Penguin, 2012.</p>
+<p>Lispector, Clarice. <em>Too Much of Life: Complete Crônicas</em>. Translated by Margaret Jull Costa and Robin Patterson. London: Penguin, 2023.</p>
+<hr />
+</div><h2 id="appendix-a-full-measurements">Appendix A. Full measurements</h2>
+<p>All four lenses at every step. AUC values are held-out; intervals in <code>analysis/data/benchmarks.json</code>. &ldquo;Trunc.&rdquo; is LEACE plus truncation to 256 dimensions without CORAL; author probes were not run at that step.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Lens</th>
+<th>Step</th>
+<th>Linear AUC</th>
+<th>kNN AUC</th>
+<th>Mixing</th>
+<th>R@10</th>
+<th>Book R@10</th>
+<th>Median rank</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mpnet</td>
+<td>raw</td>
+<td>0.969</td>
+<td>0.964</td>
+<td>0.26</td>
+<td>36.3%</td>
+<td>41.0%</td>
+<td>34</td>
+</tr>
+<tr>
+<td>mpnet</td>
+<td>LEACE</td>
+<td>0.590</td>
+<td>0.926</td>
+<td>0.37</td>
+<td>35.9%</td>
+<td>40.8%</td>
+<td>36</td>
+</tr>
+<tr>
+<td>mpnet</td>
+<td>trunc.</td>
+<td></td>
+<td></td>
+<td>0.33</td>
+<td>38.4%</td>
+<td>43.7%</td>
+<td>25</td>
+</tr>
+<tr>
+<td>mpnet</td>
+<td>LEACE + CORAL</td>
+<td>0.585</td>
+<td>0.793</td>
+<td>0.67</td>
+<td>36.4%</td>
+<td>44.0%</td>
+<td>36</td>
+</tr>
+<tr>
+<td>Qwen3, none</td>
+<td>raw</td>
+<td>0.970</td>
+<td>0.968</td>
+<td>0.26</td>
+<td>41.6%</td>
+<td>46.4%</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Qwen3, none</td>
+<td>LEACE</td>
+<td>0.585</td>
+<td>0.948</td>
+<td>0.31</td>
+<td>41.4%</td>
+<td>46.6%</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Qwen3, none</td>
+<td>trunc.</td>
+<td></td>
+<td></td>
+<td>0.30</td>
+<td>41.6%</td>
+<td>46.5%</td>
+<td>20</td>
+</tr>
+<tr>
+<td>Qwen3, none</td>
+<td>LEACE + CORAL</td>
+<td>0.578</td>
+<td>0.810</td>
+<td>0.66</td>
+<td>38.3%</td>
+<td>45.0%</td>
+<td>31</td>
+</tr>
+<tr>
+<td>Qwen3, neutral</td>
+<td>raw</td>
+<td>0.960</td>
+<td>0.952</td>
+<td>0.31</td>
+<td>29.0%</td>
+<td>35.5%</td>
+<td>59</td>
+</tr>
+<tr>
+<td>Qwen3, neutral</td>
+<td>LEACE</td>
+<td>0.565</td>
+<td>0.914</td>
+<td>0.40</td>
+<td>28.6%</td>
+<td>35.1%</td>
+<td>64</td>
+</tr>
+<tr>
+<td>Qwen3, neutral</td>
+<td>trunc.</td>
+<td></td>
+<td></td>
+<td>0.40</td>
+<td>28.5%</td>
+<td>35.4%</td>
+<td>60</td>
+</tr>
+<tr>
+<td>Qwen3, neutral</td>
+<td>LEACE + CORAL</td>
+<td>0.574</td>
+<td>0.731</td>
+<td>0.76</td>
+<td>25.3%</td>
+<td>34.4%</td>
+<td>94</td>
+</tr>
+<tr>
+<td>Qwen3, theme</td>
+<td>raw</td>
+<td>0.949</td>
+<td>0.936</td>
+<td>0.37</td>
+<td>29.9%</td>
+<td>36.8%</td>
+<td>60</td>
+</tr>
+<tr>
+<td>Qwen3, theme</td>
+<td>LEACE</td>
+<td>0.574</td>
+<td>0.893</td>
+<td>0.46</td>
+<td>29.3%</td>
+<td>36.6%</td>
+<td>64</td>
+</tr>
+<tr>
+<td>Qwen3, theme</td>
+<td>trunc.</td>
+<td></td>
+<td></td>
+<td>0.44</td>
+<td>29.6%</td>
+<td>36.8%</td>
+<td>60</td>
+</tr>
+<tr>
+<td>Qwen3, theme</td>
+<td>LEACE + CORAL</td>
+<td>0.581</td>
+<td>0.720</td>
+<td>0.79</td>
+<td>24.9%</td>
+<td>34.8%</td>
+<td>102</td>
+</tr>
+</tbody>
+</table></div>
+<p>Book identity (linear probe, 5-fold, accuracy; majority class Kafka 0.42, Lispector 0.48):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Lens</th>
+<th>Kafka raw</th>
+<th>Kafka erased</th>
+<th>Lispector raw</th>
+<th>Lispector erased</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>mpnet</td>
+<td>0.92</td>
+<td>0.92</td>
+<td>0.77</td>
+<td>0.77</td>
+</tr>
+<tr>
+<td>Qwen3, none</td>
+<td>0.92</td>
+<td>0.92</td>
+<td>0.79</td>
+<td>0.79</td>
+</tr>
+<tr>
+<td>Qwen3, neutral</td>
+<td>0.90</td>
+<td>0.91</td>
+<td>0.72</td>
+<td>0.75</td>
+</tr>
+<tr>
+<td>Qwen3, theme</td>
+<td>0.89</td>
+<td>0.91</td>
+<td>0.72</td>
+<td>0.75</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="appendix-b-pilot-machine-reading-previous-corpus">Appendix B. Pilot machine reading (previous corpus)</h2>
+<p>Before the corpus was deduplicated, 60 cross-author pairs were scored 0/1/2 by the language model that helped build the framework: 20 map bridges, 20 mutual cosine matches from the general model, and 20 random pairs. Source arms were hidden from the reader; authors and book titles were not. Same-thought rates were 10 of 20 for bridges (exact 95% interval 27% to 73%), 5 of 20 for the general model (9% to 49%) and 0 of 20 for random pairs (0% to 17%). A bridge outscored a general-model match with probability 0.69 [0.53, 0.83].</p>
+<p>This pilot cannot support the paper&rsquo;s claims: the reader is not independent of the method, the reading was not blind to author, the corpus contained <em>The Metamorphosis</em> twice, and the arms differ in model, erasure and matching at once, so no difference can be credited to erasure. It motivated the blueprint in Section 5.6.</p>
+<h2 id="appendix-c-settings">Appendix C. Settings</h2>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Passage length</td>
+<td>join below 70 words; split above 280; drop unjoinable fragments below 35</td>
+</tr>
+<tr>
+<td>CORAL dimensions</td>
+<td>256 (variants 128, 512)</td>
+</tr>
+<tr>
+<td>CSLS neighbourhood</td>
+<td>10 (variants 5, 20)</td>
+</tr>
+<tr>
+<td>Neighbours for mixing and kNN probe</td>
+<td>15</td>
+</tr>
+<tr>
+<td>Bridges examined</td>
+<td>top 300 of all mutual CSLS matches</td>
+</tr>
+<tr>
+<td>Constellations</td>
+<td>18, Ward on 10-d UMAP; UMAP seed 42 (stability seeds 1 to 4)</td>
+</tr>
+<tr>
+<td>Bootstrap</td>
+<td>2,000 resamples</td>
+</tr>
+<tr>
+<td>Mixing null</td>
+<td>200 label permutations</td>
+</tr>
+<tr>
+<td>Shuffle null for bridges</td>
+<td>20 label shuffles</td>
+</tr>
+<tr>
+<td>Known-answer alignment</td>
+<td>counterpart if position overlap is at least half of the shorter passage</td>
+</tr>
+</tbody>
+</table></div>
+</main>
+</body>
+</html>
